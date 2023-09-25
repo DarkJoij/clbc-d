@@ -1,0 +1,10 @@
+{
+	"authors": [
+		"DarkJoij"
+	],
+	"copyright": "Copyright 2023 DarkJoij",
+	"description": "The D Programming Language Cross-language bytecode (clbc) implementation.",
+	"license": "Apache-2.0",
+	"name": "clbc-d",
+	"targetType": "library"
+}
