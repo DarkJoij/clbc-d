@@ -1,0 +1,22 @@
+# Folders:
+.dub
+docs.json
+__dummy.html
+docs/
+/clbc-d
+
+# Files:
+clbc-d.so
+clbc-d.dylib
+clbc-d.dll
+clbc-d.a
+clbc-d.lib
+clbc-d-test-*
+libclbc-*
+
+# File extensions:
+*.exe
+*.pdb
+*.o
+*.obj
+*.lst
