@@ -35,7 +35,7 @@ public:
         __kind = InstructionKind.SINGLE;
 
         string[] units = line.split(" ")
-            .filter!(pUnit => pUnit.strip() != "")
+            .filter!(unit => unit.strip() != "")
             .array;
         
         if (units.length > 6) {
