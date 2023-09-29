@@ -1,0 +1,3 @@
+DEF { NUMBER & x }
+SET { x & 1 }
+PUT { x }

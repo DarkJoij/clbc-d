@@ -3,32 +3,42 @@ module clbc_d.features.default_tools;
 import std.array;
 import std.format;
 
-import clbc_d.errors;
-
-private class IterBase(T) {
+private class IterBase(T, I) {
 protected:
-    T[] _elements;
-    size_t _index;
+    T[] _elements; // Might be `const` provided?
+    I _index;
     size_t _length;
 
     final this(T[] _elements, size_t _length) {
         this._elements = _elements;
         this._length = _length;
     }
-}
 
-public final class Iter(T) : IterBase!(T) {
-public:
-    final this() {
-        this([]);
+    bool isInRange(I index) const {
+        return index < _length;
     }
 
+    @noreturn
+    void outOfBounds() const {
+        import clbc_d.errors;
+
+        throw new IndexOutOfBoundsException("Index out of bounds: %d", _index);
+    }
+
+public:
+    void reset() {
+        _index = 0;
+    }
+}
+
+public final class StaticIter(T, I = size_t) : IterBase!(T, I) {  
+public:
     final this(T[] _elements) {
         super(_elements, _elements.length);
     }
 
     final this(T[] _elements...) {
-        this(array(_elements));
+        this(_elements.array);
     }
 
     @property
@@ -41,23 +51,33 @@ public:
         return _length;
     }
 
-    /++ 
-     + Must be checked!
-     +/
-    T getCurrent(uint forward = 0) const {
-        size_t peekingIndex = _index + forward;
+    T getCurrent(I forward = 0) const {
+        auto peekingIndex = cast(I) (_index + forward);
 
-        if (peekingIndex >= size_t.max || peekingIndex + 1 >= _length) {
-            throw new IndexOutOfBoundsException("Index out of bounds: %d", _index);
+        if (peekingIndex >= I.max || !isInRange(peekingIndex)) {
+            outOfBounds();
         }
 
-        return _elements[peekingIndex];
+        return cast(T) _elements[peekingIndex];
+    }
+
+    T getNext() {
+        ++_index;
+        return getCurrent();
+    }
+
+    void next() {
+        ++_index;
+
+        if (!isInRange(_index)) {
+            outOfBounds();
+        }
     }
 
     override string toString() const {
-        string fmt = "Iter[";
+        string fmt = "StaticIter[";
 
-        foreach (T element; _elements) {
+        foreach (element; _elements) {
             string spec = element == getCurrent() ? "->%s<-, " : "%s, "; 
             fmt ~= format(spec, element);
         }
@@ -67,12 +87,19 @@ public:
 }
 
 unittest {
-    Iter!(ubyte) seq_iter = new Iter!(ubyte)(1, 2, 3);
-    Iter!(ubyte) arr_iter = new Iter!(ubyte)([1, 2, 3]);
+    alias _Iter = StaticIter!(ubyte, ubyte);
+
+    _Iter seq_iter = new _Iter(1, 2, 3);
+    _Iter arr_iter = new _Iter([1, 2, 3]);
 
     assert(seq_iter.elements == arr_iter.elements);
     assert(arr_iter.length == arr_iter.length);
 
-    assert(seq_iter.toString() == "Iter[->1<-, 2, 3]");
-    assert(arr_iter.toString() == "Iter[->1<-, 2, 3]");
+    seq_iter.next();
+
+    arr_iter.next();
+    assert(arr_iter.getNext() == 3);
+
+    assert(seq_iter.toString() == "StaticIter[1, ->2<-, 3]");
+    assert(arr_iter.toString() == "StaticIter[1, 2, ->3<-]");
 }

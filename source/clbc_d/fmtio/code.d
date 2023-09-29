@@ -1,26 +1,149 @@
 module clbc_d.fmtio.code;
 
+import std.algorithm;
 import std.array;
+import std.format;
+import std.string;
 
-public final class ByteCode {
+import clbc_d.features;
+
+public enum InstructionKind {
+    SINGLE,
+    DOUBLE,
+    TRIPLE
+}
+
+public final class Instruction {
 private:
-    string innerCode;
+    InstructionKind __kind;
+    bool __invalid;
+    
+    void __makeInvalid() {
+        __invalid = true;
+    }
 
-public: 
-    string[] lines;
-    size_t linesCount;
+public:
+    const string 
+        command, 
+        separator_1, 
+        potObject_1, 
+        separator_2, 
+        potObject_2, 
+        separator_3;
 
-    final this(string code) {
-        this.innerCode = code;
+    final this(string line) {
+        __kind = InstructionKind.SINGLE;
 
-        this.lines = code.split("\n");
-        this.linesCount = this.lines.length;
+        string[] units = line.split(" ")
+            .filter!(pUnit => pUnit.strip() != "")
+            .array;
+        
+        if (units.length > 6) {
+            __makeInvalid();
+        }
+
+        if (!__invalid) {
+            if (units.length >= 4) {
+                command = units[0];
+                separator_1 = units[1]; 
+                potObject_1 = units[2]; 
+                separator_2 = units[3];
+
+                if (units.length == 6) {
+                    potObject_2 = units[4];
+                    separator_3 = units[5];
+
+                    __kind = InstructionKind.DOUBLE;
+                }
+            } else {
+                __makeInvalid();
+            }
+        }
+    }
+
+    @property
+    InstructionKind kind() {
+        return __kind;
+    }
+
+    override string toString() const {
+        final switch (__kind) {
+            case InstructionKind.SINGLE:
+                return format("Instruction(\"%s\", %s, \"%s\", %s)",
+                    command, separator_1, potObject_1, separator_2);
+            case InstructionKind.DOUBLE:
+                return format("Instruction(\"%s\", %s, \"%s\", %s, \"%s\", %s)",
+                    command, separator_1, potObject_1, separator_2, potObject_2, separator_3);
+            case InstructionKind.TRIPLE:
+                return "Not implemented.";
+        }
     }
 }
 
 unittest {
-    ByteCode bc = new ByteCode("1\n2");
+    import std.stdio;
 
-    assert(bc.lines == ["1", "2"]);
-    assert(bc.linesCount == 2);
+    Instruction double_ = new Instruction(" DEF  {  NUMBER  &  x  }");
+    Instruction single_ = new Instruction(" PUT  {  x  }");
+
+    assert(double_.command == "DEF");
+    assert(double_.separator_1 == "{");
+    assert(double_.potObject_1 == "NUMBER");
+    assert(double_.separator_2 == "&");
+    assert(double_.potObject_2 == "x");
+    assert(double_.separator_3 == "}");
+    assert(double_.kind == InstructionKind.DOUBLE);
+    assert(double_.toString() == "Instruction(\"DEF\", {, \"NUMBER\", &, \"x\", })");
+
+    assert(single_.command == "PUT");
+    assert(single_.separator_1 == "{");
+    assert(single_.potObject_1 == "x");
+    assert(single_.separator_2 == "}");
+    assert(single_.kind == InstructionKind.SINGLE);
+    assert(single_.toString() == "Instruction(\"PUT\", {, \"x\", })");
+}
+
+public alias Lines = StaticIter!(Instruction, size_t);
+
+public final class InputCode {
+private:
+    Lines __lines;
+
+public: 
+    final this(string code) {
+        Instruction[] instuctions = code.split("\n")
+            .map!(line => new Instruction(line))
+            .array;
+
+        this.__lines = new Lines(instuctions);
+    }
+
+    @property
+    Lines lines() {
+        return __lines;
+    }
+
+    @property
+    size_t length() {
+        return __lines.length;
+    }
+
+    override string toString() const {
+        return format("InputCode(>>> %s)", __lines);
+    }
+}
+
+unittest {
+    InputCode ic = new InputCode("DEF { NUMBER & number }\nSET { x & 10 }");
+
+    Instruction[] __extextedInstructions = [        
+        new Instruction("DEF { NUMBER & number }"), 
+        new Instruction("SET { x & 10 }")
+    ];
+
+    assert(ic.length == 2);
+}
+
+public final class OutputCode {
+    // FIXME!
 }
