@@ -136,7 +136,7 @@ public:
 unittest {
     InputCode ic = new InputCode("DEF { NUMBER & number }\nSET { x & 10 }");
 
-    Instruction[] __extextedInstructions = [        
+    Instruction[] __expextedInstructions = [        
         new Instruction("DEF { NUMBER & number }"), 
         new Instruction("SET { x & 10 }")
     ];
