@@ -34,6 +34,7 @@ public:
 
     final this() {
         __kind = InstructionKind.NULL;
+        this("EOF { null }");
     }
 
     final this(string line) {
@@ -49,14 +50,14 @@ public:
 
         if (!__invalid) {
             if (units.length >= 4) {
-                command = units[0];
-                separator_1 = units[1]; 
-                object_1 = units[2]; 
-                separator_2 = units[3];
+                this.command = units[0];
+                this.separator_1 = units[1]; 
+                this.object_1 = units[2];
+                this.separator_2 = units[3];
 
                 if (units.length == 6) {
-                    potentialObject_2 = units[4];
-                    separator_3 = units[5];
+                    this.potentialObject_2 = units[4]; 
+                    this.separator_3 = units[5];
 
                     __kind = InstructionKind.DOUBLE;
                 }

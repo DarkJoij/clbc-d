@@ -3,6 +3,20 @@ module clbc_d.translator.expressions;
 import std.conv;
 import std.format;
 
+public enum ExpressionCommandKind {
+    DEFINITION,
+    ASSIGNMENT,
+    OUTPUT,
+    NULL
+}
+
+public enum CLBC_Type {
+    NUMBER,
+    STRING,
+    IDENTIFIER,
+    VOID
+}
+
 public enum ExpressionResultKind {
     PRINTABLE,
     VOID,
@@ -20,6 +34,7 @@ public:
     }
 
     final this(ExpressionResultKind kind) {
+        this.result = "";
         this.kind = kind;
     }
 
