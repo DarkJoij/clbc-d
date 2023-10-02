@@ -52,7 +52,7 @@ public:
     }
 
     T getCurrent(I forward = 0) const {
-        auto peekingIndex = cast(I) (_index + forward);
+        I peekingIndex = cast(I) (_index + forward);
 
         if (peekingIndex >= I.max || !isInRange(peekingIndex)) {
             outOfBounds();
